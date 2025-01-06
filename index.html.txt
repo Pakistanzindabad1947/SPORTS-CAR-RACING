@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Car Racing Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="road">
+            <div id="car"></div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
+/* Resetting default margin and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Game container */
+#game-container {
+    width: 500px;
+    height: 800px;
+    position: relative;
+    background-color: #333;
+    border: 2px solid #fff;
+    overflow: hidden;
+}
+
+/* Road in the middle */
+#road {
+    width: 100%;
+    height: 100%;
+    background: #666;
+    position: relative;
+}
+
+/* Car styling */
+#car {
+    width: 50px;
+    height: 100px;
+    background-color: red;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    margin-left: -25px;
+    border-radius: 5px;
+}
+// Variables for game elements
+const car = document.getElementById('car');
+const road = document.getElementById('road');
+let carPositionX = 50; // 50% (center of the road)
+
+// Car movement speed
+const carSpeed = 5;
+
+// Add event listener for keydown events to move the car
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowLeft' && carPositionX > 0) {
+        carPositionX -= carSpeed;
+    }
+    if (event.key === 'ArrowRight' && carPositionX < 100) {
+        carPositionX += carSpeed;
+    }
+
+    updateCarPosition();
+});
+
+// Update car's position on the screen
+function updateCarPosition() {
+    car.style.left = `${carPositionX}%`;
+}
+
+// Create obstacles
+function createObstacle() {
+    const obstacle = document.createElement('div');
+    obstacle.classList.add('obstacle');
+    const randomPosition = Math.random() * (road.clientWidth - 50);
+    obstacle.style.left = `${randomPosition}px`;
+    road.appendChild(obstacle);
+
+    let obstaclePositionY = -100; // Start above the screen
+
+    // Move the obstacle downwards
+    const moveObstacle = setInterval(() => {
+        if (obstaclePositionY > road.clientHeight) {
+            clearInterval(moveObstacle);
+            road.removeChild(obstacle);
+        } else {
+            obstaclePositionY += 5;
+            obstacle.style.top = `${obstaclePositionY}px`;
+
+            // Check for collision with the car
+            if (isCollision(obstacle, car)) {
+                alert('Game Over! You collided with an obstacle.');
+                clearInterval(moveObstacle);
+                road.removeChild(obstacle);
+                location.reload(); // Reload the game
+            }
+        }
+    }, 20);
+}
+
+// Check for collision between the car and an obstacle
+function isCollision(obstacle, car) {
+    const carRect = car.getBoundingClientRect();
+    const obstacleRect = obstacle.getBoundingClientRect();
+
+    return !(
+        carRect.top > obstacleRect.bottom ||
+        carRect.bottom < obstacleRect.top ||
+        carRect.right < obstacleRect.left ||
+        carRect.left > obstacleRect.right
+    );
+}
+
+// Generate obstacles every 1 second
+setInterval(createObstacle, 1000);
